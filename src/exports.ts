@@ -15,7 +15,7 @@
 import {io} from '@tensorflow/tfjs-core';
 
 import {ContainerConfig} from './engine/container';
-import {Input, InputConfig,} from './engine/input_layer';
+import {Input, InputConfig, } from './engine/input_layer';
 import {SymbolicTensor} from './engine/topology';
 import {Model} from './engine/training';
 import {loadModelInternal, Sequential, SequentialConfig} from './models';
@@ -144,7 +144,7 @@ export function sequential(config?: SequentialConfig): Sequential {
  * }
  */
 export function loadModel(
-    pathOrIOHandler: string|io.IOHandler, strict = true): Promise<Model> {
+  pathOrIOHandler: string | io.IOHandler, strict = true): Promise<Model> {
   return loadModelInternal(pathOrIOHandler, strict);
 }
 

@@ -22,6 +22,7 @@ import {ZeroPadding2D, ZeroPadding2DLayerConfig} from './layers/padding';
 import {AveragePooling1D, AveragePooling2D, GlobalAveragePooling1D, GlobalAveragePooling2D, GlobalMaxPooling1D, GlobalMaxPooling2D, GlobalPooling2DLayerConfig, MaxPooling1D, MaxPooling2D, Pooling1DLayerConfig, Pooling2DLayerConfig} from './layers/pooling';
 import {GRU, GRUCell, GRUCellLayerConfig, GRULayerConfig, LSTM, LSTMCell, LSTMCellLayerConfig, LSTMLayerConfig, RNN, RNNCell, RNNLayerConfig, SimpleRNN, SimpleRNNCell, SimpleRNNCellLayerConfig, SimpleRNNLayerConfig, StackedRNNCells, StackedRNNCellsConfig} from './layers/recurrent';
 import {Bidirectional, BidirectionalLayerConfig, TimeDistributed, Wrapper, WrapperLayerConfig} from './layers/wrappers';
+import {UpsamplingLayerConfig, Upsampling} from './layers/upsampling';
 
 
 
@@ -175,6 +176,10 @@ export function cropping2D(config: Cropping2DLayerConfig): Layer {
  */
 export function upSampling2d(config: UpSampling2DLayerConfig): Layer {
   return new UpSampling2D(config);
+}
+
+export function upsampling(config: UpsamplingLayerConfig): Layer {
+  return new Upsampling(config);
 }
 
 // Convolutional(depthwise) Layers.
@@ -391,7 +396,7 @@ export function multiply(config?: LayerConfig): Layer {
  * }
  */
 export function batchNormalization(config: BatchNormalizationLayerConfig):
-    Layer {
+  Layer {
   return new BatchNormalization(config);
 }
 
@@ -476,7 +481,7 @@ export function globalAveragePooling1d(config: LayerConfig): Layer {
  * }
  */
 export function globalAveragePooling2d(config: GlobalPooling2DLayerConfig):
-    Layer {
+  Layer {
   return new GlobalAveragePooling2D(config);
 }
 
