@@ -33,3 +33,5 @@ export const constraints = ConstraintExports;
 export const initializers = InitializerExports;
 export const metrics = MetricExports;
 export const regularizers = RegularizerExports;
+
+window.console.log('my tf-layers')
