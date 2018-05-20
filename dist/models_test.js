@@ -113,16 +113,20 @@ test_utils_1.describeMathCPU('model_from_json', function () {
             .then(done)
             .catch(done.fail);
     });
-    it('toJSON return value includes correct versions', function (done) {
-        models_1.modelFromJSON(fakeRoundtripModel)
-            .then(function (model) {
-            var serializedModel = model.toJSON(null, false);
-            expect(serializedModel['keras_version'])
-                .toEqual("tfjs-layers " + version_1.version);
-        })
-            .then(done)
-            .catch(done.fail);
-    });
+    it('toJSON return value includes correct versions', function () { return __awaiter(_this, void 0, void 0, function () {
+        var model, serializedModel;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4, models_1.modelFromJSON(fakeRoundtripModel)];
+                case 1:
+                    model = _a.sent();
+                    serializedModel = model.toJSON(null, false);
+                    expect(serializedModel['keras_version'])
+                        .toEqual("tfjs-layers " + version_1.version);
+                    return [2];
+            }
+        });
+    }); });
 });
 test_utils_1.describeMathCPU('loadModel from URL', function () {
     var setupFakeWeightFiles = function (fileBufferMap) {
@@ -186,6 +190,260 @@ test_utils_1.describeMathCPU('loadModel from URL', function () {
         var isModelConfigNested = isModelConfigNestedValues_1[_i];
         _loop_1(isModelConfigNested);
     }
+    it('load topology and weights from implicit relative http path', function (done) { return __awaiter(_this, void 0, void 0, function () {
+        var modelTopology, weightsManifest;
+        return __generator(this, function (_a) {
+            modelTopology = JSON.parse(JSON.stringify(fakeSequentialModel)).modelTopology;
+            weightsManifest = [
+                {
+                    'paths': ['weight_0'],
+                    'weights': [
+                        { 'name': "dense_6/kernel", 'dtype': 'float32', 'shape': [32, 32] }
+                    ],
+                },
+                {
+                    'paths': ['weight_1'],
+                    'weights': [{ 'name': "dense_6/bias", 'dtype': 'float32', 'shape': [32] }],
+                }
+            ];
+            spyOn(window, 'fetch').and.callFake(function (path) {
+                if (path === 'model/model.json') {
+                    return new Response(JSON.stringify({
+                        modelTopology: modelTopology,
+                        weightsManifest: weightsManifest,
+                    }));
+                }
+                else if (path === 'model/weight_0') {
+                    return new Response(tfjs_core_1.ones([32, 32], 'float32').dataSync());
+                }
+                else if (path === 'model/weight_1') {
+                    return new Response(tfjs_core_1.zeros([32], 'float32').dataSync());
+                }
+                else {
+                    throw new Error("Invalid path: " + path);
+                }
+            });
+            models_1.loadModelInternal('model/model.json')
+                .then(function (model) {
+                expect(model.layers.length).toEqual(2);
+                expect(model.inputs.length).toEqual(1);
+                expect(model.inputs[0].shape).toEqual([null, 32]);
+                expect(model.outputs.length).toEqual(1);
+                expect(model.outputs[0].shape).toEqual([null, 32]);
+                var weightValues = model.getWeights();
+                expect(weightValues.length).toEqual(2);
+                test_utils_1.expectTensorsClose(weightValues[0], tfjs_core_1.ones([32, 32]));
+                test_utils_1.expectTensorsClose(weightValues[1], tfjs_core_1.zeros([32]));
+                done();
+            })
+                .catch(function (err) {
+                done.fail(err.stack);
+            });
+            return [2];
+        });
+    }); });
+    it('load topology and weights from implicit relative http path: HDF5 format', function (done) { return __awaiter(_this, void 0, void 0, function () {
+        var modelTopology, weightsManifest;
+        return __generator(this, function (_a) {
+            modelTopology = JSON.parse(JSON.stringify(fakeSequentialModelFromHDF5))
+                .modelTopology;
+            weightsManifest = [
+                {
+                    'paths': ['weight_0'],
+                    'weights': [
+                        { 'name': "dense_1/kernel", 'dtype': 'float32', 'shape': [10, 2] }
+                    ],
+                },
+                {
+                    'paths': ['weight_1'],
+                    'weights': [{ 'name': "dense_1/bias", 'dtype': 'float32', 'shape': [2] }],
+                },
+                {
+                    'paths': ['weight_2'],
+                    'weights': [
+                        { 'name': "dense_2/kernel", 'dtype': 'float32', 'shape': [2, 1] }
+                    ],
+                },
+                {
+                    'paths': ['weight_3'],
+                    'weights': [{ 'name': "dense_2/bias", 'dtype': 'float32', 'shape': [1] }],
+                }
+            ];
+            spyOn(window, 'fetch').and.callFake(function (path) {
+                if (path === 'model/model.json') {
+                    return new Response(JSON.stringify({
+                        modelTopology: modelTopology,
+                        weightsManifest: weightsManifest,
+                    }));
+                }
+                else if (path === 'model/weight_0') {
+                    return new Response(tfjs_core_1.ones([10, 2], 'float32').dataSync());
+                }
+                else if (path === 'model/weight_1') {
+                    return new Response(tfjs_core_1.zeros([2], 'float32').dataSync());
+                }
+                else if (path === 'model/weight_2') {
+                    return new Response(tfjs_core_1.zeros([2, 1], 'float32').dataSync());
+                }
+                else if (path === 'model/weight_3') {
+                    return new Response(tfjs_core_1.ones([1], 'float32').dataSync());
+                }
+                else {
+                    throw new Error("Invalid path: " + path);
+                }
+            });
+            models_1.loadModelInternal('model/model.json')
+                .then(function (model) {
+                expect(model.layers.length).toEqual(2);
+                expect(model.inputs.length).toEqual(1);
+                expect(model.inputs[0].shape).toEqual([null, 10]);
+                expect(model.outputs.length).toEqual(1);
+                expect(model.outputs[0].shape).toEqual([null, 1]);
+                var weightValues = model.getWeights();
+                expect(weightValues.length).toEqual(4);
+                test_utils_1.expectTensorsClose(weightValues[0], tfjs_core_1.ones([10, 2]));
+                test_utils_1.expectTensorsClose(weightValues[1], tfjs_core_1.zeros([2]));
+                test_utils_1.expectTensorsClose(weightValues[2], tfjs_core_1.zeros([2, 1]));
+                test_utils_1.expectTensorsClose(weightValues[3], tfjs_core_1.ones([1]));
+                done();
+            })
+                .catch(function (err) {
+                done.fail(err.stack);
+            });
+            return [2];
+        });
+    }); });
+    it('load topology and weights with browserHTTPRequest with requestInit', function (done) { return __awaiter(_this, void 0, void 0, function () {
+        var modelTopology, weightsManifest, requestHeaders, requestCredentials;
+        return __generator(this, function (_a) {
+            modelTopology = JSON.parse(JSON.stringify(fakeSequentialModel)).modelTopology;
+            weightsManifest = [
+                {
+                    'paths': ['weight_0'],
+                    'weights': [
+                        { 'name': "dense_6/kernel", 'dtype': 'float32', 'shape': [32, 32] }
+                    ],
+                },
+                {
+                    'paths': ['weight_1'],
+                    'weights': [{ 'name': "dense_6/bias", 'dtype': 'float32', 'shape': [32] }],
+                }
+            ];
+            requestHeaders = [];
+            requestCredentials = [];
+            spyOn(window, 'fetch')
+                .and.callFake(function (path, requestInit) {
+                if (requestInit != null) {
+                    requestHeaders.push(requestInit.headers);
+                    requestCredentials.push(requestInit.credentials);
+                }
+                if (path === 'model/model.json') {
+                    return new Response(JSON.stringify({
+                        modelTopology: modelTopology,
+                        weightsManifest: weightsManifest,
+                    }));
+                }
+                else if (path === 'model/weight_0') {
+                    return new Response(tfjs_core_1.ones([32, 32], 'float32').dataSync());
+                }
+                else if (path === 'model/weight_1') {
+                    return new Response(tfjs_core_1.zeros([32], 'float32').dataSync());
+                }
+                else {
+                    throw new Error("Invalid path: " + path);
+                }
+            });
+            models_1.loadModelInternal(tfjs_core_1.io.browserHTTPRequest('model/model.json', {
+                headers: { 'header_key_1': 'header_value_1' },
+                credentials: 'include',
+            }))
+                .then(function (model) {
+                expect(model.layers.length).toEqual(2);
+                expect(model.inputs.length).toEqual(1);
+                expect(model.inputs[0].shape).toEqual([null, 32]);
+                expect(model.outputs.length).toEqual(1);
+                expect(model.outputs[0].shape).toEqual([null, 32]);
+                var weightValues = model.getWeights();
+                expect(weightValues.length).toEqual(2);
+                test_utils_1.expectTensorsClose(weightValues[0], tfjs_core_1.ones([32, 32]));
+                test_utils_1.expectTensorsClose(weightValues[1], tfjs_core_1.zeros([32]));
+                expect(requestHeaders).toEqual([
+                    { 'header_key_1': 'header_value_1' },
+                    { 'header_key_1': 'header_value_1' },
+                    { 'header_key_1': 'header_value_1' }
+                ]);
+                expect(requestCredentials).toEqual([
+                    'include', 'include', 'include'
+                ]);
+                done();
+            })
+                .catch(function (err) {
+                done.fail(err.stack);
+            });
+            return [2];
+        });
+    }); });
+    var httpProtocols = ['http://', 'https://'];
+    var _loop_3 = function (protocol) {
+        it("load topology and weights: explicit relative " + protocol + " path", function (done) { return __awaiter(_this, void 0, void 0, function () {
+            var modelTopology, weightsManifest;
+            return __generator(this, function (_a) {
+                modelTopology = JSON.parse(JSON.stringify(fakeSequentialModel)).modelTopology;
+                weightsManifest = [
+                    {
+                        'paths': ['weight_0'],
+                        'weights': [{
+                                'name': "dense_6/kernel",
+                                'dtype': 'float32',
+                                'shape': [32, 32]
+                            }],
+                    },
+                    {
+                        'paths': ['weight_1'],
+                        'weights': [{ 'name': "dense_6/bias", 'dtype': 'float32', 'shape': [32] }],
+                    }
+                ];
+                spyOn(window, 'fetch').and.callFake(function (path) {
+                    if (path === protocol + "localhost:8888/models/model.json") {
+                        return new Response(JSON.stringify({
+                            modelTopology: modelTopology,
+                            weightsManifest: weightsManifest,
+                        }));
+                    }
+                    else if (path === protocol + "localhost:8888/models/weight_0") {
+                        return new Response(tfjs_core_1.ones([32, 32], 'float32').dataSync());
+                    }
+                    else if (path === protocol + "localhost:8888/models/weight_1") {
+                        return new Response(tfjs_core_1.zeros([32], 'float32').dataSync());
+                    }
+                    else {
+                        throw new Error("Invalid path: " + path);
+                    }
+                });
+                models_1.loadModelInternal(protocol + "localhost:8888/models/model.json")
+                    .then(function (model) {
+                    expect(model.layers.length).toEqual(2);
+                    expect(model.inputs.length).toEqual(1);
+                    expect(model.inputs[0].shape).toEqual([null, 32]);
+                    expect(model.outputs.length).toEqual(1);
+                    expect(model.outputs[0].shape).toEqual([null, 32]);
+                    var weightValues = model.getWeights();
+                    expect(weightValues.length).toEqual(2);
+                    test_utils_1.expectTensorsClose(weightValues[0], tfjs_core_1.ones([32, 32]));
+                    test_utils_1.expectTensorsClose(weightValues[1], tfjs_core_1.zeros([32]));
+                    done();
+                })
+                    .catch(function (err) {
+                    done.fail(err.stack);
+                });
+                return [2];
+            });
+        }); });
+    };
+    for (var _a = 0, httpProtocols_1 = httpProtocols; _a < httpProtocols_1.length; _a++) {
+        var protocol = httpProtocols_1[_a];
+        _loop_3(protocol);
+    }
     it('Missing weight in manifest leads to error', function (done) {
         setupFakeWeightFiles({
             './weight_0': tfjs_core_1.ones([32, 32], 'float32').dataSync(),
@@ -205,8 +463,8 @@ test_utils_1.describeMathCPU('loadModel from URL', function () {
         var configJson = JSON.parse(JSON.stringify(fakeSequentialModel)).modelTopology;
         configJson['config']['layers'][1]['config']['name'] = denseLayerName;
         models_1.modelFromJSON({ modelTopology: configJson, weightsManifest: weightsManifest, pathPrefix: '.' })
-            .then(function () { return done.fail; })
-            .catch(done);
+            .then(function () { return done.fail(); })
+            .catch(function () { return done(); });
     });
     it('Loads weights despite uniqueified tensor names', function (done) { return __awaiter(_this, void 0, void 0, function () {
         var denseLayerName, weightsManifest, configJson, model1, model2, e_1;
@@ -481,8 +739,8 @@ test_utils_1.describeMathCPUAndGPU('Sequential', function () {
                     return [4, model.fit(xs, ys, { batchSize: batchSize, epochs: 2 })];
                 case 1:
                     history = _a.sent();
-                    test_utils_1.expectTensorsClose(history.history['loss'][0], tfjs_core_1.scalar(121));
-                    test_utils_1.expectTensorsClose(history.history['loss'][1], tfjs_core_1.scalar(0.015178224071860313));
+                    expect(history.history['loss'][0]).toBe(121);
+                    expect(history.history['loss'][1]).toBeCloseTo(0.015178224071860313);
                     return [2];
             }
         });
@@ -571,6 +829,69 @@ var fakeSequentialModel = {
             'name': 'test'
         },
         'backend': 'tensorflow'
+    }
+};
+var fakeSequentialModelFromHDF5 = {
+    modelTopology: {
+        'backend': 'tensorflow',
+        'keras_version': '2.1.4',
+        'model_config': {
+            'class_name': 'Sequential',
+            'config': [
+                {
+                    'class_name': 'Dense',
+                    'config': {
+                        'kernel_initializer': {
+                            'class_name': 'VarianceScaling',
+                            'config': {
+                                'distribution': 'uniform',
+                                'scale': 1.0,
+                                'seed': null,
+                                'mode': 'fan_avg'
+                            }
+                        },
+                        'name': 'dense_1',
+                        'kernel_constraint': null,
+                        'bias_regularizer': null,
+                        'bias_constraint': null,
+                        'dtype': 'float32',
+                        'activation': 'relu',
+                        'trainable': true,
+                        'kernel_regularizer': null,
+                        'bias_initializer': { 'class_name': 'Zeros', 'config': {} },
+                        'units': 2,
+                        'batch_input_shape': [null, 10],
+                        'use_bias': true,
+                        'activity_regularizer': null
+                    }
+                },
+                {
+                    'class_name': 'Dense',
+                    'config': {
+                        'kernel_initializer': {
+                            'class_name': 'VarianceScaling',
+                            'config': {
+                                'distribution': 'uniform',
+                                'scale': 1.0,
+                                'seed': null,
+                                'mode': 'fan_avg'
+                            }
+                        },
+                        'name': 'dense_2',
+                        'kernel_constraint': null,
+                        'bias_regularizer': null,
+                        'bias_constraint': null,
+                        'activation': 'sigmoid',
+                        'trainable': true,
+                        'kernel_regularizer': null,
+                        'bias_initializer': { 'class_name': 'Zeros', 'config': {} },
+                        'units': 1,
+                        'use_bias': true,
+                        'activity_regularizer': null
+                    }
+                }
+            ]
+        },
     }
 };
 var fakeNonSequentialModel = {

@@ -4,7 +4,7 @@ import { ContainerConfig, InputConfig, InputLayerConfig, Layer, LayerConfig } fr
 import { Model } from './engine/training';
 import { ConstantConfig, IdentityConfig, Initializer, OrthogonalConfig, RandomNormalConfig, RandomUniformConfig, SeedOnlyInitializerConfig, TruncatedNormalConfig, VarianceScalingConfig, Zeros } from './initializers';
 import { ELULayerConfig, LeakyReLULayerConfig, SoftmaxLayerConfig, ThresholdedReLULayerConfig } from './layers/advanced_activations';
-import { ConvLayerConfig, Cropping2DLayerConfig, SeparableConvLayerConfig } from './layers/convolutional';
+import { ConvLayerConfig, Cropping2DLayerConfig, SeparableConvLayerConfig, UpSampling2DLayerConfig } from './layers/convolutional';
 import { DepthwiseConv2DLayerConfig } from './layers/convolutional_depthwise';
 import { ActivationLayerConfig, DenseLayerConfig, DropoutLayerConfig, RepeatVectorLayerConfig, ReshapeLayerConfig } from './layers/core';
 import { EmbeddingLayerConfig } from './layers/embeddings';
@@ -17,6 +17,7 @@ import { BidirectionalLayerConfig, Wrapper, WrapperLayerConfig } from './layers/
 import { Sequential, SequentialConfig } from './models';
 import { L1Config, L1L2Config, L2Config, Regularizer } from './regularizers';
 import { SymbolicTensor } from './types';
+import { UpsamplingLayerConfig } from './layers/upsampling';
 export declare class ModelExports {
     static model(config: ContainerConfig): Model;
     static sequential(config?: SequentialConfig): Sequential;
@@ -38,6 +39,7 @@ export declare class LayerExports {
     static conv2dTranspose(config: ConvLayerConfig): Layer;
     static separableConv2d(config: SeparableConvLayerConfig): Layer;
     static cropping2D(config: Cropping2DLayerConfig): Layer;
+    static upSampling2d(config: UpSampling2DLayerConfig): Layer;
     static depthwiseConv2d(config: DepthwiseConv2DLayerConfig): Layer;
     static activation(config: ActivationLayerConfig): Layer;
     static dense(config: DenseLayerConfig): Layer;
@@ -74,6 +76,7 @@ export declare class LayerExports {
     static simpleRNNCell(config: SimpleRNNCellLayerConfig): RNNCell;
     static rnn(config: RNNLayerConfig): Layer;
     static stackedRNNCells(config: StackedRNNCellsConfig): RNNCell;
+    static upsampling(config: UpsamplingLayerConfig): Layer;
     static bidirectional(config: BidirectionalLayerConfig): Wrapper;
     static timeDistributed(config: WrapperLayerConfig): Layer;
 }

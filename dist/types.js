@@ -26,6 +26,7 @@ var SymbolicTensor = (function () {
             this.originalName = common_1.getScopedTensorName(name);
             this.name = common_1.getUniqueTensorName(this.originalName);
         }
+        this.rank = shape.length;
     }
     SymbolicTensor = __decorate([
         tfjs_core_1.doc({ heading: 'Models', 'subheading': 'Classes' })

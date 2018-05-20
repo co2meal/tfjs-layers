@@ -1,2 +1,2 @@
-declare const version = "0.6.1";
+declare const version = "0.6.5";
 export { version };

@@ -11,7 +11,6 @@ export declare const epsilon: typeof common_epsilon;
 export declare function isBackendSymbolic(): boolean;
 export declare function shape(x: Tensor | SymbolicTensor): Shape;
 export declare function intShape(x: Tensor | SymbolicTensor): number[];
-export declare function ndim(x: Tensor | SymbolicTensor): number;
 export declare function dtype(x: Tensor | SymbolicTensor): DataType;
 export declare function countParams(x: Tensor | SymbolicTensor): number;
 export declare function cast(x: Tensor, dtype: 'float32' | 'int32' | 'bool'): Tensor;

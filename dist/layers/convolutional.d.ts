@@ -120,3 +120,17 @@ export declare class Cropping2D extends Layer {
     call(inputs: Tensor | Tensor[], kwargs: Kwargs): Tensor | Tensor[];
     getConfig(): serialization.ConfigDict;
 }
+export interface UpSampling2DLayerConfig extends LayerConfig {
+    size?: number[];
+    dataFormat?: DataFormat;
+}
+export declare class UpSampling2D extends Layer {
+    static className: string;
+    protected readonly DEFAULT_SIZE: number[];
+    protected readonly size: number[];
+    protected readonly dataFormat: DataFormat;
+    constructor(config: UpSampling2DLayerConfig);
+    computeOutputShape(inputShape: Shape): Shape;
+    call(inputs: Tensor | Tensor[], kwargs: Kwargs): Tensor | Tensor[];
+    getConfig(): serialization.ConfigDict;
+}

@@ -1,4 +1,4 @@
-import { Tensor } from '@tensorflow/tfjs-core';
+import { serialization, Tensor } from '@tensorflow/tfjs-core';
 import { Layer, LayerConfig } from '../engine/topology';
 import { Kwargs, Shape, SymbolicTensor } from '../types';
 export declare abstract class Merge extends Layer {
@@ -51,5 +51,6 @@ export declare class Concatenate extends Merge {
     build(inputShape: Shape | Shape[]): void;
     protected mergeFunction(inputs: Tensor[]): Tensor;
     computeOutputShape(inputShape: Shape | Shape[]): Shape | Shape[];
+    getConfig(): serialization.ConfigDict;
 }
 export declare function concatenate(config?: SymbolicTensor[] | Tensor[] | ConcatenateLayerConfig): Layer | SymbolicTensor | Tensor;

@@ -35,6 +35,7 @@ import {binaryAccuracy, binaryCrossentropy, categoricalAccuracy} from './metrics
 import {loadModelInternal, Sequential, SequentialConfig} from './models';
 import {l1, L1Config, L1L2, L1L2Config, l2, L2Config, Regularizer} from './regularizers';
 import {SymbolicTensor} from './types';
+import { Upsampling, UpsamplingLayerConfig } from './layers/upsampling';
 
 // tslint:enable:max-line-length
 
@@ -688,6 +689,17 @@ export class LayerExports {
     return new StackedRNNCells(config);
   }
 
+  @doc({
+    heading: 'Layers',
+    subheading: 'Wrapper',
+    namespace: 'layers',
+    useDocsFrom: 'Upsampling',
+    configParamIndices: [0]
+  })
+  static upsampling(config: UpsamplingLayerConfig): Layer {
+    return new Upsampling(config);
+  }
+
   // Wrapper Layers.
 
   @doc({
@@ -705,7 +717,7 @@ export class LayerExports {
     heading: 'Layers',
     subheading: 'Wrapper',
     namespace: 'layers',
-    useDocsFrom: 'TimeDistributed',
+    useDocsFrom: 'Upsampling',
     configParamIndices: [0]
   })
   static timeDistributed(config: WrapperLayerConfig): Layer {

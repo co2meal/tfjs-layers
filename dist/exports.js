@@ -26,6 +26,7 @@ var losses_1 = require("./losses");
 var metrics_1 = require("./metrics");
 var models_1 = require("./models");
 var regularizers_1 = require("./regularizers");
+var upsampling_1 = require("./layers/upsampling");
 var ModelExports = (function () {
     function ModelExports() {
     }
@@ -97,6 +98,9 @@ var LayerExports = (function () {
     };
     LayerExports.cropping2D = function (config) {
         return new convolutional_1.Cropping2D(config);
+    };
+    LayerExports.upSampling2d = function (config) {
+        return new convolutional_1.UpSampling2D(config);
     };
     LayerExports.depthwiseConv2d = function (config) {
         return new convolutional_depthwise_1.DepthwiseConv2D(config);
@@ -206,6 +210,9 @@ var LayerExports = (function () {
     LayerExports.stackedRNNCells = function (config) {
         return new recurrent_1.StackedRNNCells(config);
     };
+    LayerExports.upsampling = function (config) {
+        return new upsampling_1.Upsampling(config);
+    };
     LayerExports.bidirectional = function (config) {
         return new wrappers_1.Bidirectional(config);
     };
@@ -306,6 +313,15 @@ var LayerExports = (function () {
             configParamIndices: [0]
         })
     ], LayerExports, "cropping2D", null);
+    __decorate([
+        tfjs_core_1.doc({
+            heading: 'Layers',
+            subheading: 'Convolutional',
+            namespace: 'layers',
+            useDocsFrom: 'UpSampling2D',
+            configParamIndices: [0]
+        })
+    ], LayerExports, "upSampling2d", null);
     __decorate([
         tfjs_core_1.doc({
             heading: 'Layers',
@@ -599,6 +615,15 @@ var LayerExports = (function () {
             heading: 'Layers',
             subheading: 'Wrapper',
             namespace: 'layers',
+            useDocsFrom: 'Upsampling',
+            configParamIndices: [0]
+        })
+    ], LayerExports, "upsampling", null);
+    __decorate([
+        tfjs_core_1.doc({
+            heading: 'Layers',
+            subheading: 'Wrapper',
+            namespace: 'layers',
             useDocsFrom: 'Bidirectional',
             configParamIndices: [0]
         })
@@ -608,7 +633,7 @@ var LayerExports = (function () {
             heading: 'Layers',
             subheading: 'Wrapper',
             namespace: 'layers',
-            useDocsFrom: 'TimeDistributed',
+            useDocsFrom: 'Upsampling',
             configParamIndices: [0]
         })
     ], LayerExports, "timeDistributed", null);
@@ -910,13 +935,28 @@ var RegularizerExports = (function () {
         return regularizers_1.l2(config);
     };
     __decorate([
-        tfjs_core_1.doc({ heading: 'Regularizers', namespace: 'regularizers', useDocsFrom: 'L1L2' })
+        tfjs_core_1.doc({
+            heading: 'Regularizers',
+            namespace: 'regularizers',
+            useDocsFrom: 'L1L2',
+            configParamIndices: [0]
+        })
     ], RegularizerExports, "l1l2", null);
     __decorate([
-        tfjs_core_1.doc({ heading: 'Regularizers', namespace: 'regularizers', useDocsFrom: 'L1L2' })
+        tfjs_core_1.doc({
+            heading: 'Regularizers',
+            namespace: 'regularizers',
+            useDocsFrom: 'L1L2',
+            configParamIndices: [0]
+        })
     ], RegularizerExports, "l1", null);
     __decorate([
-        tfjs_core_1.doc({ heading: 'Regularizers', namespace: 'regularizers', useDocsFrom: 'L1L2' })
+        tfjs_core_1.doc({
+            heading: 'Regularizers',
+            namespace: 'regularizers',
+            useDocsFrom: 'L1L2',
+            configParamIndices: [0]
+        })
     ], RegularizerExports, "l2", null);
     return RegularizerExports;
 }());

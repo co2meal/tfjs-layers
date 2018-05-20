@@ -1,4 +1,4 @@
-import { io, Optimizer, Scalar, Tensor, Tensor1D } from '@tensorflow/tfjs-core';
+import { io, ModelPredictConfig, Optimizer, Scalar, Tensor, Tensor1D } from '@tensorflow/tfjs-core';
 import { Callback, CustomCallbackConfig, History } from '../callbacks';
 import { LossOrMetricFn, NamedTensorMap, Shape } from '../types';
 import { Container, ContainerConfig } from './topology';
@@ -22,10 +22,6 @@ export declare function sliceArraysByIndices(arrays: Tensor | Tensor[], indices:
 export declare enum ModelLoggingVerbosity {
     SILENT = 0,
     VERBOSE = 1,
-}
-export interface ModelPredictConfig {
-    batchSize?: number;
-    verbose?: boolean;
 }
 export interface ModelEvaluateConfig {
     batchSize?: number;
@@ -74,6 +70,7 @@ export declare class Model extends Container {
     private collectedTrainableWeights;
     private testFunction;
     history: History;
+    stopTraining: boolean;
     metrics: string[] | {
         [outputName: string]: string;
     };

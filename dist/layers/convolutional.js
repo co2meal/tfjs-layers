@@ -98,13 +98,13 @@ function conv2dWithBias(x, kernel, bias, strides, padding, dataFormat, dilationR
             dataFormat = common_1.imageDataFormat();
         }
         common_2.checkDataFormat(dataFormat);
-        if (K.ndim(x) !== 3 && K.ndim(x) !== 4) {
+        if (x.rank !== 3 && x.rank !== 4) {
             throw new errors_1.ValueError("conv2dWithBias expects input to be of rank 3 or 4, but received " +
-                (K.ndim(x) + "."));
+                (x.rank + "."));
         }
-        if (K.ndim(kernel) !== 3 && K.ndim(kernel) !== 4) {
+        if (kernel.rank !== 3 && kernel.rank !== 4) {
             throw new errors_1.ValueError("conv2dWithBias expects kernel to be of rank 3 or 4, but received " +
-                (K.ndim(x) + "."));
+                (x.rank + "."));
         }
         var y = preprocessConv2DInput(x, dataFormat);
         if (padding === 'causal') {
@@ -593,4 +593,57 @@ var Cropping2D = (function (_super) {
 }(topology_1.Layer));
 exports.Cropping2D = Cropping2D;
 tfjs_core_1.serialization.SerializationMap.register(Cropping2D);
+var UpSampling2D = (function (_super) {
+    __extends(UpSampling2D, _super);
+    function UpSampling2D(config) {
+        var _this = _super.call(this, config) || this;
+        _this.DEFAULT_SIZE = [2, 2];
+        _this.inputSpec = [{ ndim: 4 }];
+        _this.size = config.size === undefined ? _this.DEFAULT_SIZE : config.size;
+        _this.dataFormat =
+            config.dataFormat === undefined ? 'channelsLast' : config.dataFormat;
+        return _this;
+    }
+    UpSampling2D.prototype.computeOutputShape = function (inputShape) {
+        if (this.dataFormat === 'channelsFirst') {
+            var height = this.size[0] * inputShape[2];
+            var width = this.size[1] * inputShape[3];
+            return [inputShape[0], inputShape[1], height, width];
+        }
+        else {
+            var height = this.size[0] * inputShape[1];
+            var width = this.size[1] * inputShape[2];
+            return [inputShape[0], height, width, inputShape[3]];
+        }
+    };
+    UpSampling2D.prototype.call = function (inputs, kwargs) {
+        var _this = this;
+        return tfc.tidy(function () {
+            var input = generic_utils.getExactlyOneTensor(inputs);
+            var inputShape = input.shape;
+            if (_this.dataFormat === 'channelsFirst') {
+                input = tfc.transpose(input, [0, 2, 3, 1]);
+                var height = _this.size[0] * inputShape[2];
+                var width = _this.size[1] * inputShape[3];
+                var resized = input.resizeNearestNeighbor([height, width]);
+                return tfc.transpose(resized, [0, 3, 1, 2]);
+            }
+            else {
+                var height = _this.size[0] * inputShape[1];
+                var width = _this.size[1] * inputShape[2];
+                return input.resizeNearestNeighbor([height, width]);
+            }
+        });
+    };
+    UpSampling2D.prototype.getConfig = function () {
+        var config = { size: this.size, dataFormat: this.dataFormat };
+        var baseConfig = _super.prototype.getConfig.call(this);
+        Object.assign(config, baseConfig);
+        return config;
+    };
+    UpSampling2D.className = 'UpSampling2D';
+    return UpSampling2D;
+}(topology_1.Layer));
+exports.UpSampling2D = UpSampling2D;
+tfjs_core_1.serialization.SerializationMap.register(UpSampling2D);
 //# sourceMappingURL=convolutional.js.map

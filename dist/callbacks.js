@@ -308,13 +308,17 @@ var BaseLogger = (function (_super) {
                         this_1.totals[key] = this_1.totals[key] + value * batchSize;
                     }
                     else {
-                        if (!this_1.totals.hasOwnProperty(key)) {
+                        var oldTotalsToDispose = void 0;
+                        if (key in this_1.totals) {
+                            oldTotalsToDispose = this_1.totals[key];
+                        }
+                        else {
                             this_1.totals[key] = K.getScalar(0);
                         }
-                        tfjs_core_1.tidy(function () {
-                            _this.totals[key] = K.scalarPlusArray(_this.totals[key], tfjs_core_1.mul(value, K.getScalar(batchSize)));
-                            tfjs_core_1.keep(_this.totals[key]);
-                        });
+                        this_1.totals[key] = tfjs_core_1.tidy(function () { return K.scalarPlusArray(_this.totals[key], tfjs_core_1.mul(value, K.getScalar(batchSize))); });
+                        if (oldTotalsToDispose != null) {
+                            oldTotalsToDispose.dispose();
+                        }
                     }
                 };
                 this_1 = this;
@@ -342,6 +346,7 @@ var BaseLogger = (function (_super) {
                             tfjs_core_1.tidy(function () {
                                 logs[key] =
                                     K.scalarTimesArray(tfjs_core_1.div(K.getScalar(1), K.getScalar(_this.seen)), _this.totals[key]);
+                                _this.totals[key].dispose();
                                 tfjs_core_1.keep(logs[key]);
                             });
                         }

@@ -287,7 +287,7 @@ var Layer = (function (_super) {
             if (spec == null) {
                 continue;
             }
-            var ndim = K.ndim(x);
+            var ndim = x.rank;
             if (spec.ndim != null) {
                 if (ndim !== spec.ndim) {
                     throw new errors_1.ValueError("Input " + inputIndex + " is incompatible with layer " + this.name + ": " +

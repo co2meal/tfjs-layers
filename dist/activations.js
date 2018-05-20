@@ -71,7 +71,7 @@ var Relu6 = (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Relu6.prototype.apply = function (x) {
-        return tfjs_core_1.tidy(function () { return tfc.minimum(tfjs_core_1.scalar(6.0), tfc.relu(x)); });
+        return tfjs_core_1.tidy(function () { return tfc.minimum(K.getScalar(6.0), tfc.relu(x)); });
     };
     Relu6.className = 'relu6';
     return Relu6;

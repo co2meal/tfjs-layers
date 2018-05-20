@@ -2,9 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var tfjs_core_1 = require("@tensorflow/tfjs-core");
 var tfl = require("../index");
+var serialization_utils_1 = require("../utils/serialization_utils");
 var test_utils_1 = require("../utils/test_utils");
 var core_1 = require("./core");
 var recurrent_1 = require("./recurrent");
+var serialization_1 = require("./serialization");
 var wrappers_1 = require("./wrappers");
 test_utils_1.describeMathCPU('TimeDistributed Layer: Symbolic', function () {
     it('3D input: Dense', function () {
@@ -138,6 +140,19 @@ test_utils_1.describeMathCPU('Bidirectional Layer: Symbolic', function () {
         expect(outputs[0].shape).toEqual([10, 8, 3]);
         expect(outputs[1].shape).toEqual([10, 3]);
         expect(outputs[2].shape).toEqual([10, 3]);
+    });
+    it('Serialization round trip', function () {
+        var layer = tfl.layers.bidirectional({
+            layer: new recurrent_1.SimpleRNN({ units: 3 }),
+            mergeMode: 'concat',
+            inputShape: [4, 4],
+        });
+        var model = tfl.sequential({ layers: [layer] });
+        var unused = null;
+        var modelJSON = model.toJSON(unused, false);
+        var modelPrime = serialization_1.deserialize(serialization_utils_1.convertPythonicToTs(modelJSON));
+        expect(modelPrime.layers[0].getConfig().mergeMode)
+            .toEqual('concat');
     });
 });
 describe('checkBidirectionalMergeMode', function () {

@@ -57,10 +57,6 @@ function intShape(x) {
     return x.shape;
 }
 exports.intShape = intShape;
-function ndim(x) {
-    return x.shape.length;
-}
-exports.ndim = ndim;
 function dtype(x) {
     return (x instanceof tfjs_core_1.Tensor) ? DEFAULT_DTYPE : x.dtype;
 }
@@ -106,8 +102,8 @@ function flatten(x) {
 }
 exports.flatten = flatten;
 function batchFlatten(x) {
-    if (ndim(x) <= 1) {
-        throw new errors_1.ValueError("batchFlatten requires a minimum rank of 2. Got rank: " + ndim(x) + ".");
+    if (x.rank <= 1) {
+        throw new errors_1.ValueError("batchFlatten requires a minimum rank of 2. Got rank: " + x.rank + ".");
     }
     var newShape = [x.shape[0], math_utils.arrayProd(x.shape, 1)];
     return x.reshape(newShape);
@@ -201,7 +197,7 @@ function concatenate(tensors, axis) {
     if (axis === void 0) { axis = -1; }
     var rank;
     if (axis < 0) {
-        rank = ndim(tensors[0]);
+        rank = tensors[0].rank;
         if (rank !== 0) {
             axis = rank;
         }
@@ -209,7 +205,7 @@ function concatenate(tensors, axis) {
             axis = 0;
         }
     }
-    if (axis === ndim(tensors[0])) {
+    if (axis === tensors[0].rank) {
         axis = -1;
     }
     return tfc.concat(tensors, axis);
@@ -235,9 +231,9 @@ function tile(x, n) {
     if (!Array.isArray(n)) {
         n = [n];
     }
-    if (ndim(x) !== n.length) {
+    if (x.rank !== n.length) {
         throw new errors_1.ValueError("The length of input n (" + n.length + ") does not match " +
-            ("the number of dimensions in input x (" + ndim(x) + ")"));
+            ("the number of dimensions in input x (" + x.rank + ")"));
     }
     return tfc.tile(x, n);
 }
@@ -265,15 +261,15 @@ function randomNormal(shape, mean, stddev, dtype, seed) {
 }
 exports.randomNormal = randomNormal;
 function dot(x, y) {
-    if (ndim(y) !== 2) {
+    if (y.rank !== 2) {
         throw new errors_1.NotImplementedError("dot support for y other than rank 2 is not yet implemented: " +
             ("y shape = " + shape));
     }
     else {
-        if (ndim(x) === 2) {
+        if (x.rank === 2) {
             return tfc.matMul(x, y);
         }
-        else if (ndim(x) === 3) {
+        else if (x.rank === 3) {
             var xShape0 = x.shape[0];
             var xShape1 = x.shape[1];
             var xShape2 = x.shape[2];
@@ -283,7 +279,7 @@ function dot(x, y) {
             ]);
         }
         else {
-            throw new errors_1.NotImplementedError("dot support for x of rank " + ndim(x) + " is not yet implemented: " +
+            throw new errors_1.NotImplementedError("dot support for x of rank " + x.rank + " is not yet implemented: " +
                 ("x shape = " + shape));
         }
     }
@@ -361,7 +357,7 @@ function qr(x) {
 exports.qr = qr;
 function oneHot(indices, numClasses) {
     return tfjs_core_1.tidy(function () {
-        if (ndim(indices) !== 1) {
+        if (indices.rank !== 1) {
             throw new Error('Only 1D one-hot tensors are supported in the ' +
                 'deeplearn backend, at present.');
         }
@@ -404,13 +400,13 @@ function biasAdd(x, bias, dataFormat) {
             dataFormat = common_3.imageDataFormat();
         }
         common_1.checkDataFormat(dataFormat);
-        if (ndim(bias) !== 1 && ndim(bias) !== ndim(x)) {
-            throw new errors_1.ValueError('Unexpected bias dimensions: ' + ndim(bias) +
-                '; expected it to be 1 or ' + ndim(x));
+        if (bias.rank !== 1 && bias.rank !== x.rank) {
+            throw new errors_1.ValueError('Unexpected bias dimensions: ' + bias.rank +
+                '; expected it to be 1 or ' + x.rank);
         }
         var biasShape = bias.shape;
         var y;
-        if (ndim(x) === 5) {
+        if (x.rank === 5) {
             if (dataFormat === 'channelsFirst') {
                 if (biasShape.length === 1) {
                     y = x.add(bias.reshape([1, biasShape[0], 1, 1, 1]));
@@ -428,7 +424,7 @@ function biasAdd(x, bias, dataFormat) {
                 }
             }
         }
-        else if (ndim(x) === 4) {
+        else if (x.rank === 4) {
             if (dataFormat === 'channelsFirst') {
                 if (biasShape.length === 1) {
                     y = x.add(bias.reshape([1, biasShape[0], 1, 1]));
@@ -446,7 +442,7 @@ function biasAdd(x, bias, dataFormat) {
                 }
             }
         }
-        else if (ndim(x) === 3) {
+        else if (x.rank === 3) {
             if (dataFormat === 'channelsFirst') {
                 if (biasShape.length === 1) {
                     y = x.add(bias.reshape([1, biasShape[0], 1]));
@@ -464,11 +460,11 @@ function biasAdd(x, bias, dataFormat) {
                 }
             }
         }
-        else if (ndim(x) < 3) {
+        else if (x.rank < 3) {
             y = x.add(bias);
         }
         else {
-            throw new errors_1.ValueError("Unsupported input rank by biasAdd: " + ndim(x));
+            throw new errors_1.ValueError("Unsupported input rank by biasAdd: " + x.rank);
         }
         return y;
     });
@@ -522,7 +518,7 @@ function getUid(prefix) {
 exports.getUid = getUid;
 function hardSigmoid(x) {
     return tfjs_core_1.tidy(function () {
-        var y = scalarPlusArray(tfjs_core_1.scalar(0.5), scalarTimesArray(tfjs_core_1.scalar(0.2), x));
+        var y = scalarPlusArray(getScalar(0.5), scalarTimesArray(getScalar(0.2), x));
         return tfc.clipByValue(y, 0, 1);
     });
 }

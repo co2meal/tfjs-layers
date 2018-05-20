@@ -157,8 +157,9 @@ var Bidirectional = (function (_super) {
     __extends(Bidirectional, _super);
     function Bidirectional(config) {
         var _this = _super.call(this, config) || this;
-        _this.forwardLayer = config.layer;
         var layerConfig = config.layer.getConfig();
+        _this.forwardLayer =
+            serialization_1.deserialize({ className: config.layer.getClassName(), config: layerConfig });
         layerConfig['goBackwards'] =
             layerConfig['goBackwards'] === true ? false : true;
         _this.backwardLayer =
@@ -335,6 +336,25 @@ var Bidirectional = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Bidirectional.prototype.getConfig = function () {
+        var config = {
+            'mergeMode': this.mergeMode,
+        };
+        var baseConfig = _super.prototype.getConfig.call(this);
+        Object.assign(config, baseConfig);
+        return config;
+    };
+    Bidirectional.fromConfig = function (cls, config) {
+        var rnnLayer = serialization_1.deserialize(config['layer']);
+        delete config['layer'];
+        if (config['numConstants'] != null) {
+            throw new errors_1.NotImplementedError("Deserialization of a Bidirectional layer with numConstants " +
+                "present is not supported yet.");
+        }
+        var newConfig = config;
+        newConfig['layer'] = rnnLayer;
+        return new cls(newConfig);
+    };
     Bidirectional.className = 'Bidirectional';
     return Bidirectional;
 }(Wrapper));

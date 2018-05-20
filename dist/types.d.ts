@@ -12,6 +12,7 @@ export declare class SymbolicTensor {
     readonly id: number;
     readonly name?: string;
     readonly originalName?: string;
+    readonly rank: number;
     nodeIndex: number;
     tensorIndex: number;
     constructor(dtype: DataType, shape: Shape, sourceLayer: Layer, inputs: SymbolicTensor[], callArgs: Kwargs, name?: string, outputTensorIndex?: number);

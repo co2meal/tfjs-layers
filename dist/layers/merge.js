@@ -101,12 +101,12 @@ var Merge = (function (_super) {
             inputs = inputs;
             if (_this.reshapeRequired) {
                 var reshapedInputs = [];
-                var inputDims = inputs.map(function (input) { return K.ndim(input); });
+                var inputDims = inputs.map(function (input) { return input.rank; });
                 if (inputDims.indexOf(null) === -1) {
                     var maxNDim = mathUtils.max(inputDims);
                     for (var _i = 0, inputs_1 = inputs; _i < inputs_1.length; _i++) {
                         var x = inputs_1[_i];
-                        var xNDim = K.ndim(x);
+                        var xNDim = x.rank;
                         for (var k = 0; k < maxNDim - xNDim; ++k) {
                             x = K.expandDims(x, 1);
                         }
@@ -118,7 +118,7 @@ var Merge = (function (_super) {
                     var transposed = false;
                     for (var _a = 0, inputs_2 = inputs; _a < inputs_2.length; _a++) {
                         var x = inputs_2[_a];
-                        var xNDim = K.ndim(x);
+                        var xNDim = x.rank;
                         if (xNDim == null) {
                             var xShape = K.shape(x);
                             var batchSize = xShape[0];
@@ -139,7 +139,7 @@ var Merge = (function (_super) {
                         }
                     }
                     var y = _this.mergeFunction(reshapedInputs);
-                    var yNDim = K.ndim(y);
+                    var yNDim = y.rank;
                     if (transposed) {
                         if (yNDim == null) {
                             var yShape = K.shape(y);
@@ -417,6 +417,14 @@ var Concatenate = (function (_super) {
             outputShape[axis] += shape[axis];
         }
         return outputShape;
+    };
+    Concatenate.prototype.getConfig = function () {
+        var config = {
+            'axis': this.axis,
+        };
+        var baseConfig = _super.prototype.getConfig.call(this);
+        Object.assign(config, baseConfig);
+        return config;
     };
     Concatenate.className = 'Concatenate';
     return Concatenate;

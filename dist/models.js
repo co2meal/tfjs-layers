@@ -98,7 +98,7 @@ function loadModelInternal(pathOrIOHandler) {
             if (typeof pathOrIOHandler === 'string') {
                 handlers = tfjs_core_1.io.getLoadHandlers(pathOrIOHandler);
                 if (handlers.length === 0) {
-                    return [2, loadModelFromPath(pathOrIOHandler)];
+                    handlers.push(tfjs_core_1.io.browserHTTPRequest(pathOrIOHandler));
                 }
                 else if (handlers.length > 1) {
                     throw new errors_1.ValueError("Found more than one (" + handlers.length + ") load handlers for " +
@@ -113,7 +113,7 @@ function loadModelInternal(pathOrIOHandler) {
 exports.loadModelInternal = loadModelInternal;
 function loadModelFromIOHandler(handler, customObjects) {
     return __awaiter(this, void 0, void 0, function () {
-        var artifacts, model, skipMismatch, isNamedTensorMap;
+        var artifacts, modelTopology, model, skipMismatch, isNamedTensorMap;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -124,7 +124,11 @@ function loadModelFromIOHandler(handler, customObjects) {
                     return [4, handler.load()];
                 case 1:
                     artifacts = _a.sent();
-                    model = serialization_1.deserialize(serialization_utils_1.convertPythonicToTs(artifacts.modelTopology), customObjects);
+                    modelTopology = artifacts.modelTopology;
+                    if (modelTopology['model_config'] != null) {
+                        modelTopology = modelTopology['model_config'];
+                    }
+                    model = serialization_1.deserialize(serialization_utils_1.convertPythonicToTs(modelTopology), customObjects);
                     if (artifacts.weightData != null) {
                         if (artifacts.weightSpecs == null) {
                             throw new errors_1.ValueError('Model artifacts contains weight data, but not weight specs. ' +
@@ -140,33 +144,6 @@ function loadModelFromIOHandler(handler, customObjects) {
     });
 }
 exports.loadModelFromIOHandler = loadModelFromIOHandler;
-function loadModelFromPath(modelConfigPath) {
-    return __awaiter(this, void 0, void 0, function () {
-        var modelConfigRequest, modelConfig;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4, fetch(modelConfigPath)];
-                case 1:
-                    modelConfigRequest = _a.sent();
-                    return [4, modelConfigRequest.json()];
-                case 2:
-                    modelConfig = _a.sent();
-                    if (modelConfig['modelTopology'] == null) {
-                        throw new errors_1.ValueError('Missing field "modelTopology" from model JSON at path' +
-                            modelConfigPath);
-                    }
-                    if (modelConfig['weightsManifest'] == null) {
-                        throw new errors_1.ValueError('Missing field "weightsManifest" from model JSON at path' +
-                            modelConfigPath);
-                    }
-                    modelConfig.pathPrefix =
-                        modelConfigPath.substring(0, modelConfigPath.lastIndexOf('/'));
-                    return [2, modelFromJSON(modelConfig)];
-            }
-        });
-    });
-}
-exports.loadModelFromPath = loadModelFromPath;
 var Sequential = (function (_super) {
     __extends(Sequential, _super);
     function Sequential(config) {
@@ -266,6 +243,7 @@ var Sequential = (function (_super) {
         return this.model.call(inputs, kwargs);
     };
     Sequential.prototype.build = function (inputShape) {
+        generic_utils.getExactlyOneShape(inputShape);
         if (this.inputs.length === 0 || this.outputs.length === 0) {
             throw new TypeError('Sequential model cannot be built: model is empty.' +
                 ' Add some layers first.');

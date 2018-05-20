@@ -214,6 +214,7 @@ export function deserializeKerasObject(
     } else if (className in moduleObjects) {
       [cls, fromConfig] = moduleObjects[className];
     }
+
     if (cls == null) {
       throw new ValueError(`Unknown ${printableModuleName}: ${className}`);
     }

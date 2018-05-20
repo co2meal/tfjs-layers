@@ -45,7 +45,7 @@ test_utils_1.describeMathCPU('Merge Layers Except Concatenate: Symbolic', functi
     }
     it('Single input leads to exception', function () {
         var x = new tfl.SymbolicTensor('float32', [2, 2], null, [], null);
-        var addLayer = new merge_1.Add({ name: 'Add' });
+        var addLayer = tfl.layers.add({ name: 'Add' });
         expect(function () {
             addLayer.apply([x]);
         }).toThrowError(/.*at least 2 inputs\. Got 1 input.*/);
@@ -53,7 +53,7 @@ test_utils_1.describeMathCPU('Merge Layers Except Concatenate: Symbolic', functi
     it('Non-unique batch sizes to exception', function () {
         var x1 = new tfl.SymbolicTensor('float32', [1, 2], null, [], null);
         var x2 = new tfl.SymbolicTensor('float32', [2, 2], null, [], null);
-        var addLayer = new merge_1.Add({ name: 'Add' });
+        var addLayer = tfl.layers.add({ name: 'Add' });
         expect(function () {
             addLayer.apply([x1, x2]);
         }).toThrowError(/Can not merge tensors with different batch sizes/);
@@ -78,6 +78,16 @@ test_utils_1.describeMathCPUAndGPU('Add-Functional', function () {
         var input2 = tfjs_core_1.tensor2d([10, 20, 30, 40], [2, 2]);
         var output = tfl.layers.add().apply([input1, input2]);
         test_utils_1.expectTensorsClose(output, tfjs_core_1.tensor2d([11, 22, 33, 44], [2, 2]));
+    });
+    it('predict() with functional model with Add layer works', function () {
+        var input = tfl.layers.input({ shape: [24, 24, 3] });
+        var conv1 = tfl.layers.conv2d({ filters: 4, kernelSize: [3, 3] }).apply(input);
+        var conv2 = tfl.layers.conv2d({ filters: 4, kernelSize: [3, 3] }).apply(input);
+        var sum = tfl.layers.add().apply([conv1, conv2]);
+        var model = tfl.model({ inputs: [input], outputs: sum });
+        var x = tfjs_core_1.ones([1, 24, 24, 3]);
+        var y = model.predict(x);
+        expect(y.shape).toEqual([1, 22, 22, 4]);
     });
 });
 test_utils_1.describeMathCPUAndGPU('Multiply-Functional', function () {
@@ -195,19 +205,19 @@ test_utils_1.describeMathCPU('Concatenate Layer: Symbolic', function () {
     it('All known shapes', function () {
         var x1 = new tfl.SymbolicTensor('float32', [2, 3, 4], null, [], null);
         var x2 = new tfl.SymbolicTensor('float32', [2, 3, 4], null, [], null);
-        var layer0 = new merge_1.Concatenate({});
+        var layer0 = tfl.layers.concatenate({});
         expect(layer0.apply([x1, x2]).shape).toEqual([
             2, 3, 8
         ]);
-        var layer1 = new merge_1.Concatenate({ axis: -1 });
+        var layer1 = tfl.layers.concatenate({ axis: -1 });
         expect(layer1.apply([x1, x2]).shape).toEqual([
             2, 3, 8
         ]);
-        var layer2 = new merge_1.Concatenate({ axis: 0 });
+        var layer2 = tfl.layers.concatenate({ axis: 0 });
         expect(layer2.apply([x1, x2]).shape).toEqual([
             4, 3, 4
         ]);
-        var layer3 = new merge_1.Concatenate({ axis: 1 });
+        var layer3 = tfl.layers.concatenate({ axis: 1 });
         expect(layer3.apply([x1, x2]).shape).toEqual([
             2, 6, 4
         ]);
@@ -215,7 +225,7 @@ test_utils_1.describeMathCPU('Concatenate Layer: Symbolic', function () {
     it('Concat axis has unknown shape', function () {
         var x1 = new tfl.SymbolicTensor('float32', [2, null, 4], null, [], null);
         var x2 = new tfl.SymbolicTensor('float32', [2, null, 4], null, [], null);
-        var layer = new merge_1.Concatenate({ axis: 1 });
+        var layer = tfl.layers.concatenate({ axis: 1 });
         expect(layer.apply([x1, x2]).shape).toEqual([
             2, null, 4
         ]);
@@ -223,7 +233,7 @@ test_utils_1.describeMathCPU('Concatenate Layer: Symbolic', function () {
     it('Non-concat axis has unknown shape', function () {
         var x1 = new tfl.SymbolicTensor('float32', [null, 3, 4], null, [], null);
         var x2 = new tfl.SymbolicTensor('float32', [null, 5, 4], null, [], null);
-        var layer = new merge_1.Concatenate({ axis: 1 });
+        var layer = tfl.layers.concatenate({ axis: 1 });
         expect(layer.apply([x1, x2]).shape).toEqual([
             null, 8, 4
         ]);
@@ -231,37 +241,44 @@ test_utils_1.describeMathCPU('Concatenate Layer: Symbolic', function () {
     it('Incompatible shape leads to error', function () {
         var x1 = new tfl.SymbolicTensor('float32', [2, 3, 5], null, [], null);
         var x2 = new tfl.SymbolicTensor('float32', [2, 4, 5], null, [], null);
-        var layer = new merge_1.Concatenate({});
+        var layer = tfl.layers.concatenate({});
         expect(function () { return layer.apply([
             x1, x2
         ]); }).toThrowError(/requires inputs with matching shapes except/);
     });
     it('Single shape leads to error', function () {
         var x1 = new tfl.SymbolicTensor('float32', [2, 3, 5], null, [], null);
-        var layer = new merge_1.Concatenate({});
+        var layer = tfl.layers.concatenate({});
         expect(function () { return layer.apply([x1]); })
             .toThrowError(/should be called on a list of at least 2 inputs/);
+    });
+    it('Serialization round trip', function () {
+        var layer = tfl.layers.concatenate({ axis: 2 });
+        var pythonicConfig = serialization_utils_1.convertTsToPythonic(layer.getConfig());
+        var tsConfig = serialization_utils_1.convertPythonicToTs(pythonicConfig);
+        var layerPrime = tfl.layers.concatenate(tsConfig);
+        expect(layerPrime.getConfig().axis).toEqual(2);
     });
 });
 test_utils_1.describeMathCPUAndGPU('Add Layer: Tensor', function () {
     it('2D plus 2D', function () {
         var x1 = tfjs_core_1.tensor2d([[10, 20], [30, 40]], [2, 2]);
         var x2 = tfjs_core_1.tensor2d([[-1, -2], [-3, -4]], [2, 2]);
-        var addLayer = new merge_1.Add({});
+        var addLayer = tfl.layers.add({});
         var y = addLayer.apply([x1, x2]);
         test_utils_1.expectTensorsClose(y, tfjs_core_1.tensor2d([[9, 18], [27, 36]], [2, 2]));
     });
     it('2D plus 2D, with broadcast', function () {
         var x1 = tfjs_core_1.tensor2d([[10, 20], [30, 40]], [2, 2]);
         var x2 = tfjs_core_1.tensor2d([[-2], [-4]], [2, 1]);
-        var addLayer = new merge_1.Add({});
+        var addLayer = tfl.layers.add({});
         var y = addLayer.apply([x1, x2]);
         test_utils_1.expectTensorsClose(y, tfjs_core_1.tensor2d([[8, 18], [26, 36]], [2, 2]));
     });
     it('2D plus 2D, with dimension expansion', function () {
         var x1 = tfjs_core_1.tensor3d([[[10, 20], [30, 40]], [[50, 60], [70, 80]]], [2, 2, 2]);
         var x2 = tfjs_core_1.tensor2d([[-2], [-4]], [2, 1]);
-        var addLayer = new merge_1.Add({});
+        var addLayer = tfl.layers.add({});
         var y = addLayer.apply([x1, x2]);
         test_utils_1.expectTensorsClose(y, tfjs_core_1.tensor3d([[[8, 18], [28, 38]], [[46, 56], [66, 76]]], [2, 2, 2]));
     });
@@ -270,7 +287,7 @@ test_utils_1.describeMathCPUAndGPU('Multiply Layer: Tensor', function () {
     it('2D times 2D', function () {
         var x1 = tfjs_core_1.tensor2d([[10, 20], [30, 40]], [2, 2]);
         var x2 = tfjs_core_1.tensor2d([[-1, -2], [-3, -4]], [2, 2]);
-        var multipyLayer = new merge_1.Multiply({});
+        var multipyLayer = tfl.layers.multiply({});
         var y = multipyLayer.apply([x1, x2]);
         test_utils_1.expectTensorsClose(y, tfjs_core_1.tensor2d([[-10, -40], [-90, -160]], [2, 2]));
     });
@@ -279,14 +296,14 @@ test_utils_1.describeMathCPUAndGPU('Average Layer: Tensor', function () {
     it('2D and 2D', function () {
         var x1 = tfjs_core_1.tensor2d([[10, 20], [30, 40]], [2, 2]);
         var x2 = tfjs_core_1.tensor2d([[-2, -4], [-6, -8]], [2, 2]);
-        var averageLayer = new merge_1.Average({});
+        var averageLayer = tfl.layers.average({});
         var y = averageLayer.apply([x1, x2]);
         test_utils_1.expectTensorsClose(y, tfjs_core_1.tensor2d([[4, 8], [12, 16]], [2, 2]));
     });
     it('2D and 2D, with broadcast', function () {
         var x1 = tfjs_core_1.tensor2d([[10, 20], [30, 40]], [2, 2]);
         var x2 = tfjs_core_1.tensor2d([[-2], [-4]], [2, 1]);
-        var averageLayer = new merge_1.Average({});
+        var averageLayer = tfl.layers.average({});
         var y = averageLayer.apply([x1, x2]);
         test_utils_1.expectTensorsClose(y, tfjs_core_1.tensor2d([[4, 9], [13, 18]], [2, 2]));
     });
@@ -295,7 +312,7 @@ test_utils_1.describeMathCPUAndGPU('Maximum Layer: Tensor', function () {
     it('2D and 2D', function () {
         var x1 = tfjs_core_1.tensor2d([[10, 20], [-6, -8]], [2, 2]);
         var x2 = tfjs_core_1.tensor2d([[-2, -4], [30, 40]], [2, 2]);
-        var averageLayer = new merge_1.Maximum({});
+        var averageLayer = tfl.layers.maximum({});
         var y = averageLayer.apply([x1, x2]);
         test_utils_1.expectTensorsClose(y, tfjs_core_1.tensor2d([[10, 20], [30, 40]], [2, 2]));
     });
@@ -304,7 +321,7 @@ test_utils_1.describeMathCPUAndGPU('Minimum Layer: Tensor', function () {
     it('2D and 2D', function () {
         var x1 = tfjs_core_1.tensor2d([[10, 20], [-6, -8]], [2, 2]);
         var x2 = tfjs_core_1.tensor2d([[-2, -4], [30, 40]], [2, 2]);
-        var averageLayer = new merge_1.Minimum({});
+        var averageLayer = tfl.layers.minimum({});
         var y = averageLayer.apply([x1, x2]);
         test_utils_1.expectTensorsClose(y, tfjs_core_1.tensor2d([[-2, -4], [-6, -8]], [2, 2]));
     });
@@ -320,7 +337,7 @@ test_utils_1.describeMathCPUAndGPU('Concatenate Layer: Tensor', function () {
     var _loop_4 = function (axis) {
         it("axis=" + axis, function () {
             createData();
-            var layer = new merge_1.Concatenate({ axis: axis });
+            var layer = tfl.layers.concatenate({ axis: axis });
             var expected = axis === 0 ?
                 tfjs_core_1.tensor2d([1, 2, 3, 4, -1, -2, -3, -4], [4, 2]) :
                 tfjs_core_1.tensor2d([1, 2, -1, -2, 3, 4, -3, -4], [2, 4]);

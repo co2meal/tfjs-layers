@@ -62,8 +62,37 @@ var Pooling1D = (function (_super) {
             config.poolSize = 2;
         }
         _this = _super.call(this, config) || this;
-        _this.poolSize = [config.poolSize];
-        _this.strides = config.strides == null ? _this.poolSize : [config.strides];
+        if (typeof config.poolSize === 'number') {
+            _this.poolSize = [config.poolSize];
+        }
+        else if (Array.isArray(config.poolSize) &&
+            config.poolSize.length === 1 &&
+            typeof config.poolSize[0] === 'number') {
+            _this.poolSize = config.poolSize;
+        }
+        else {
+            throw new errors_1.ValueError("poolSize for 1D convolutional layer must be a number or an " +
+                "Array of a single number, but received " +
+                ("" + JSON.stringify(config.poolSize)));
+        }
+        if (config.strides == null) {
+            _this.strides = _this.poolSize;
+        }
+        else {
+            if (typeof config.strides === 'number') {
+                _this.strides = [config.strides];
+            }
+            else if (Array.isArray(config.strides) &&
+                config.strides.length === 1 &&
+                typeof config.strides[0] === 'number') {
+                _this.strides = config.strides;
+            }
+            else {
+                throw new errors_1.ValueError("strides for 1D convolutional layer must be a number or an " +
+                    "Array of a single number, but received " +
+                    ("" + JSON.stringify(config.strides)));
+            }
+        }
         _this.padding = config.padding == null ? 'valid' : config.padding;
         common_2.checkPaddingMode(_this.padding);
         _this.inputSpec = [new topology_1.InputSpec({ ndim: 3 })];

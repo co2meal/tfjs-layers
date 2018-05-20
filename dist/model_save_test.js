@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
+var tfjs_core_1 = require("@tensorflow/tfjs-core");
 var tfl = require("./index");
 var core_1 = require("./layers/core");
 var models_1 = require("./models");
@@ -196,6 +197,115 @@ test_utils_1.describeMathGPU('Save-load round trips', function () {
             .catch(function (err) {
             done.fail(err.stack);
         });
+    });
+    it('Call predict() and fit() after load: conv2d model', function (done) {
+        var model = tfl.sequential();
+        model.add(tfl.layers.conv2d({
+            filters: 8,
+            kernelSize: 4,
+            inputShape: [28, 28, 1],
+            padding: 'same',
+            activation: 'relu'
+        }));
+        model.add(tfl.layers.maxPooling2d({
+            poolSize: 2,
+            padding: 'same',
+        }));
+        model.add(tfl.layers.flatten());
+        model.add(tfl.layers.dense({ units: 1 }));
+        var x = tfjs_core_1.randomNormal([1, 28, 28, 1]);
+        var y = model.predict(x);
+        var path = "testModel" + new Date().getTime() + "_" + Math.random();
+        var url = "indexeddb://" + path;
+        model.save(url)
+            .then(function (saveResult) {
+            tfl.loadModel(url)
+                .then(function (modelPrime) {
+                var yPrime = modelPrime.predict(x);
+                test_utils_1.expectTensorsClose(y, yPrime);
+                modelPrime.compile({ optimizer: 'sgd', loss: 'meanSquaredError' });
+                var trainExamples = 10;
+                modelPrime
+                    .fit(tfjs_core_1.randomNormal([trainExamples, 28, 28, 1]), tfjs_core_1.randomNormal([trainExamples]), { epochs: 4 })
+                    .then(function (history) {
+                    done();
+                })
+                    .catch(function (err) { return done.fail(err.stack); });
+            })
+                .catch(function (err) { return done.fail(err.stack); });
+        })
+            .catch(function (err) { return done.fail(err.stack); });
+    });
+    it('Call predict() and fit() after load: conv1d model', function (done) {
+        var model = tfl.sequential();
+        model.add(tfl.layers.conv1d({
+            filters: 8,
+            kernelSize: 4,
+            inputShape: [100, 1],
+            padding: 'same',
+            activation: 'relu'
+        }));
+        model.add(tfl.layers.maxPooling1d({
+            poolSize: 2,
+            padding: 'same',
+        }));
+        model.add(tfl.layers.flatten());
+        model.add(tfl.layers.dense({ units: 1 }));
+        var x = tfjs_core_1.randomNormal([1, 100, 1]);
+        var y = model.predict(x);
+        var path = "testModel" + new Date().getTime() + "_" + Math.random();
+        var url = "indexeddb://" + path;
+        model.save(url)
+            .then(function (saveResult) {
+            tfl.loadModel(url)
+                .then(function (modelPrime) {
+                var yPrime = modelPrime.predict(x);
+                test_utils_1.expectTensorsClose(y, yPrime);
+                modelPrime.compile({ optimizer: 'sgd', loss: 'meanSquaredError' });
+                var trainExamples = 10;
+                modelPrime
+                    .fit(tfjs_core_1.randomNormal([trainExamples, 100, 1]), tfjs_core_1.randomNormal([trainExamples]), { epochs: 4 })
+                    .then(function (history) {
+                    done();
+                })
+                    .catch(function (err) { return done.fail(err.stack); });
+            })
+                .catch(function (err) { return done.fail(err.stack); });
+        })
+            .catch(function (err) { return done.fail(err.stack); });
+    });
+    it('Call predict() and fit() after load: Bidirectional LSTM', function (done) {
+        var model = tfl.sequential();
+        var lstmUnits = 3;
+        var sequenceLength = 4;
+        var inputDims = 5;
+        model.add(tfl.layers.bidirectional({
+            layer: tfl.layers.lstm({ units: lstmUnits }),
+            mergeMode: 'concat',
+            inputShape: [sequenceLength, inputDims]
+        }));
+        var x = tfjs_core_1.randomNormal([2, 4, 5]);
+        var y = model.predict(x);
+        var path = "testModel" + new Date().getTime() + "_" + Math.random();
+        var url = "indexeddb://" + path;
+        model.save(url)
+            .then(function (saveResult) {
+            tfl.loadModel(url)
+                .then(function (modelPrime) {
+                var yPrime = modelPrime.predict(x);
+                test_utils_1.expectTensorsClose(y, yPrime);
+                modelPrime.compile({ optimizer: 'sgd', loss: 'meanSquaredError' });
+                var trainExamples = 2;
+                modelPrime
+                    .fit(tfjs_core_1.randomNormal([trainExamples, sequenceLength, inputDims]), tfjs_core_1.randomNormal([trainExamples, lstmUnits * 2]), { epochs: 2 })
+                    .then(function (history) {
+                    done();
+                })
+                    .catch(function (err) { return done.fail(err.stack); });
+            })
+                .catch(function (err) { return done.fail(err.stack); });
+        })
+            .catch(function (err) { return done.fail(err.stack); });
     });
 });
 //# sourceMappingURL=model_save_test.js.map

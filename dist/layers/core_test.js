@@ -39,7 +39,7 @@ describe('Dropout Layer: Symbolic', function () {
     }
 });
 test_utils_1.describeMathCPUAndGPU('Dropout Layer', function () {
-    it('tensor', function () {
+    describe('tensor', function () {
         var inputShape = [2, 3, 4];
         var trainingValues = [false, true];
         var dropoutRates = [0, 0.5];
@@ -217,7 +217,7 @@ test_utils_1.describeMathCPUAndGPU('Dense Layer: Tensor', function () {
                         var expectedShape = input.shape.slice();
                         expectedShape[expectedShape.length - 1] = units;
                         var expectedOutput;
-                        if (K.ndim(input) === 2) {
+                        if (input.rank === 2) {
                             expectedOutput = tfjs_core_1.tensor2d(generic_utils_1.pyListRepeat(expectedElementValue, math_utils_1.arrayProd(expectedShape)), [expectedShape[0], expectedShape[1]]);
                         }
                         test_utils_1.expectTensorsClose(denseLayer.apply(input, null), expectedOutput);

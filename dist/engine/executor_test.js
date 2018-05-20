@@ -69,15 +69,22 @@ test_utils_1.describeMathCPU('FeedDict', function () {
     });
 });
 test_utils_1.describeMathCPUAndGPU('Executor', function () {
-    it('Linear Graph Topology', function () {
-        var x = tfl.input({ shape: [2], name: 'fooInput', dtype: 'float32' });
-        var denseLayer1 = tfl.layers.dense({ units: 5, activation: 'linear', kernelInitializer: 'ones' });
-        var y = denseLayer1.apply(x);
-        var u = tfl.input({ shape: [2], name: 'footInput', dtype: 'float32' });
-        var denseLayer2 = tfl.layers.dense({ units: 5, activation: 'linear', kernelInitializer: 'ones' });
-        var denseLayer3 = tfl.layers.dense({ units: 3, activation: 'linear', kernelInitializer: 'ones' });
-        var v = denseLayer2.apply(u);
-        var w = denseLayer3.apply(v);
+    describe('Linear Graph Topology', function () {
+        var x;
+        var y;
+        var u;
+        var v;
+        var w;
+        beforeEach(function () {
+            x = tfl.input({ shape: [2], name: 'fooInput', dtype: 'float32' });
+            var denseLayer1 = tfl.layers.dense({ units: 5, activation: 'linear', kernelInitializer: 'ones' });
+            y = denseLayer1.apply(x);
+            u = tfl.input({ shape: [2], name: 'footInput', dtype: 'float32' });
+            var denseLayer2 = tfl.layers.dense({ units: 5, activation: 'linear', kernelInitializer: 'ones' });
+            var denseLayer3 = tfl.layers.dense({ units: 3, activation: 'linear', kernelInitializer: 'ones' });
+            v = denseLayer2.apply(u);
+            w = denseLayer3.apply(v);
+        });
         it('Execute Input directly', function () {
             var xValue = tfjs_core_1.ones([2, 2]);
             var feedDict = new executor_1.FeedDict().add(x, xValue);
@@ -104,30 +111,30 @@ test_utils_1.describeMathCPUAndGPU('Executor', function () {
                 .toThrowError(/Missing a feed value .* from InputLayer/);
         });
     });
-    it('Diamond Graph Topology', function () {
-        var x = tfl.input({ shape: [2], name: 'fooInput', dtype: 'float32' });
-        var denseLayer1 = tfl.layers.dense({
-            units: 5,
-            activation: 'linear',
-            kernelInitializer: 'ones',
-            name: 'denseLayer1'
-        });
-        var y = denseLayer1.apply(x);
-        var denseLayer2 = tfl.layers.dense({
-            units: 4,
-            activation: 'linear',
-            kernelInitializer: 'ones',
-            name: 'denseLayer2'
-        });
-        var denseLayer3 = tfl.layers.dense({
-            units: 3,
-            activation: 'linear',
-            kernelInitializer: 'ones',
-            name: 'denseLayer3'
-        });
-        var z1 = denseLayer2.apply(y);
-        var z2 = denseLayer3.apply(y);
+    describe('Diamond Graph Topology', function () {
         it('Calling execute with two fetches and diamond graph works', function () {
+            var x = tfl.input({ shape: [2], name: 'fooInput', dtype: 'float32' });
+            var denseLayer1 = tfl.layers.dense({
+                units: 5,
+                activation: 'linear',
+                kernelInitializer: 'ones',
+                name: 'denseLayer1'
+            });
+            var y = denseLayer1.apply(x);
+            var denseLayer2 = tfl.layers.dense({
+                units: 4,
+                activation: 'linear',
+                kernelInitializer: 'ones',
+                name: 'denseLayer2'
+            });
+            var denseLayer3 = tfl.layers.dense({
+                units: 3,
+                activation: 'linear',
+                kernelInitializer: 'ones',
+                name: 'denseLayer3'
+            });
+            var z1 = denseLayer2.apply(y);
+            var z2 = denseLayer3.apply(y);
             var xValue = tfjs_core_1.ones([2, 2]);
             var feedDict = new executor_1.FeedDict([{ key: x, value: xValue }]);
             var callCounter = 0;
@@ -137,7 +144,7 @@ test_utils_1.describeMathCPUAndGPU('Executor', function () {
             var outputs = executor_1.execute([z1, z2], feedDict);
             test_utils_1.expectTensorsClose(outputs[0], tfjs_core_1.tensor2d([10, 10, 10, 10, 10, 10, 10, 10], [2, 4]));
             test_utils_1.expectTensorsClose(outputs[1], tfjs_core_1.tensor2d([10, 10, 10, 10, 10, 10], [2, 3]));
-            expect(callCounter).toEqual(2);
+            expect(callCounter).toEqual(1);
         });
     });
 });

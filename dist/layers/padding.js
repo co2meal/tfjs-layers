@@ -13,15 +13,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tfc = require("@tensorflow/tfjs-core");
 var tfjs_core_1 = require("@tensorflow/tfjs-core");
 var common_1 = require("../backend/common");
-var K = require("../backend/tfjs_backend");
 var topology_1 = require("../engine/topology");
 var errors_1 = require("../errors");
 var generic_utils_1 = require("../utils/generic_utils");
 function temporalPadding(x, padding) {
     return tfjs_core_1.tidy(function () {
-        if (K.ndim(x) !== 3) {
+        if (x.rank !== 3) {
             throw new errors_1.ValueError("temporalPadding expects input tensor to be 3-D, but received a " +
-                (K.ndim(x) + "-D tensor."));
+                (x.rank + "-D tensor."));
         }
         if (padding == null) {
             padding = [1, 1];
@@ -37,9 +36,9 @@ function temporalPadding(x, padding) {
 exports.temporalPadding = temporalPadding;
 function spatial2dPadding(x, padding, dataFormat) {
     return tfjs_core_1.tidy(function () {
-        if (K.ndim(x) !== 4) {
+        if (x.rank !== 4) {
             throw new errors_1.ValueError("temporalPadding expects input tensor to be 4-D, but received a " +
-                (K.ndim(x) + "-D tensor."));
+                (x.rank + "-D tensor."));
         }
         if (padding == null) {
             padding = [[1, 1], [1, 1]];

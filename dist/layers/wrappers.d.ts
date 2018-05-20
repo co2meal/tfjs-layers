@@ -55,4 +55,6 @@ export declare class Bidirectional extends Wrapper {
     build(inputShape: Shape | Shape[]): void;
     readonly trainableWeights: LayerVariable[];
     readonly nonTrainableWeights: LayerVariable[];
+    getConfig(): serialization.ConfigDict;
+    static fromConfig<T extends serialization.Serializable>(cls: serialization.SerializableConstructor<T>, config: serialization.ConfigDict): T;
 }

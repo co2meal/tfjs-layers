@@ -24,12 +24,12 @@ function normalizeArray(value, n, name) {
     }
 }
 exports.normalizeArray = normalizeArray;
-function convOutputLength(inputLength, fliterSize, padding, stride, dilation) {
+function convOutputLength(inputLength, filterSize, padding, stride, dilation) {
     if (dilation === void 0) { dilation = 1; }
     if (inputLength == null) {
         return inputLength;
     }
-    var dilatedFilterSize = fliterSize + (fliterSize - 1) * (dilation - 1);
+    var dilatedFilterSize = filterSize + (filterSize - 1) * (dilation - 1);
     var outputLength;
     if (padding === 'same') {
         outputLength = inputLength;

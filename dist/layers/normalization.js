@@ -23,17 +23,17 @@ var math_utils = require("../utils/math_utils");
 function batchNormalization(x, mean, variance, beta, gamma, epsilon) {
     if (epsilon === void 0) { epsilon = 1e-3; }
     var out;
-    if (K.ndim(x) === 2) {
+    if (x.rank === 2) {
         out = tfc.batchNormalization2d(x, mean, variance, epsilon, gamma, beta);
     }
-    else if (K.ndim(x) === 3) {
+    else if (x.rank === 3) {
         out = tfc.batchNormalization3d(x, mean, variance, epsilon, gamma, beta);
     }
-    else if (K.ndim(x) === 4) {
+    else if (x.rank === 4) {
         out = tfc.batchNormalization4d(x, mean, variance, epsilon, gamma, beta);
     }
     else {
-        throw new errors_1.NotImplementedError("batchNormalization is not implememnted for array of rank " + K.ndim(x) + " " +
+        throw new errors_1.NotImplementedError("batchNormalization is not implememnted for array of rank " + x.rank + " " +
             "yet");
     }
     return out;
@@ -56,7 +56,7 @@ function broadcastNormalizeBatchInTraining(x, gamma, beta, reductionAxes, epsilo
         var mean = meanAndVariance.mean;
         var variance = meanAndVariance.variance;
         var targetShape = [];
-        for (var _i = 0, _a = math_utils.range(0, K.ndim(x)); _i < _a.length; _i++) {
+        for (var _i = 0, _a = math_utils.range(0, x.rank); _i < _a.length; _i++) {
             var axis = _a[_i];
             if (reductionAxes.indexOf(axis) !== -1) {
                 targetShape.push(1);
@@ -75,7 +75,7 @@ function broadcastNormalizeBatchInTraining(x, gamma, beta, reductionAxes, epsilo
 }
 function normalizeBatchInTraining(x, gamma, beta, reductionAxes, epsilon) {
     if (epsilon === void 0) { epsilon = 1e-3; }
-    if (tfjs_core_1.util.arraysEqual(reductionAxes.slice().sort(), math_utils.range(0, K.ndim(x) - 1))) {
+    if (tfjs_core_1.util.arraysEqual(reductionAxes.slice().sort(), math_utils.range(0, x.rank - 1))) {
         return regularNormalizeBatchInTraining(x, gamma, beta, reductionAxes, epsilon);
     }
     else {

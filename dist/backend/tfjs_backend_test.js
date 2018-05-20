@@ -60,28 +60,6 @@ describe('intShape', function () {
         expect(K.intShape(x)).toEqual([4, 3, 2, 1]);
     });
 });
-describe('ndim', function () {
-    it('Scalar', function () {
-        var x = tfjs_core_1.zeros([]);
-        expect(K.ndim(x)).toEqual(0);
-    });
-    it('Tensor1D', function () {
-        var x = tfjs_core_1.zeros([3]);
-        expect(K.ndim(x)).toEqual(1);
-    });
-    it('Tensor2D', function () {
-        var x = tfjs_core_1.zeros([3, 2]);
-        expect(K.ndim(x)).toEqual(2);
-    });
-    it('Tensor3D', function () {
-        var x = tfjs_core_1.zeros([4, 3, 2]);
-        expect(K.ndim(x)).toEqual(3);
-    });
-    it('Tensor4D', function () {
-        var x = tfjs_core_1.zeros([4, 3, 2, 1]);
-        expect(K.ndim(x)).toEqual(4);
-    });
-});
 describe('dtype', function () {
     it('returns float32 for an Tensor', function () {
         var x = tfjs_core_1.zeros([1]);
